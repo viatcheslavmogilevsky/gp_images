@@ -1,0 +1,7 @@
+---
+- hosts: localhost
+  roles:
+    - role: openresty
+      downloads_path: "/downloads"
+      tags: openresty-setup
+      sudo: yes

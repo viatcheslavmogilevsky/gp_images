@@ -1,0 +1,69 @@
+- name: Install required repos
+  apt_repository:
+    repo: ppa:ubuntu-toolchain-r/test
+
+- name: Install required packages
+  apt:
+    pkg: "{{ item }}"
+    state: present
+    install_recommends: no
+    update_cache: yes
+  with_items:
+    - git
+    - libreadline-dev
+    - libncurses5-dev
+    - libpcre3-dev
+    - libssl-dev
+    - perl
+    - make
+    - gcc-4.9
+
+- name: Ensure that downloads directory exists
+  file:
+    path: "{{ downloads_path }}"
+    state: directory
+
+- name: Download the OpenResty tarball
+  get_url:
+    url: "http://openresty.org/download/ngx_openresty-{{ openresty_version }}.tar.gz"
+    dest: "{{ downloads_path }}/openresty.tar.gz"
+  register: download_openresty
+
+
+- name: Extract OpenResty tarball
+  command: /bin/tar xzvf openresty.tar.gz
+  args:
+    chdir: "{{ downloads_path }}"
+  when: download_openresty|changed
+  register: extract_openresty
+
+- name: Configure OpenResty
+  command: ./configure --with-ipv6 --with-cc=/usr/bin/gcc-4.9
+  args:
+    chdir: "{{ downloads_path }}/ngx_openresty-{{ openresty_version }}"
+  when: extract_openresty|changed or force_install
+
+- name: Compile OpenResty
+  command: make
+  args:
+    chdir: "{{ downloads_path }}/ngx_openresty-{{ openresty_version }}"
+  when: extract_openresty|changed or force_install
+
+- name: Install OpenResty
+  command: make install
+  args:
+    chdir: "{{ downloads_path }}/ngx_openresty-{{ openresty_version }}"
+  when: extract_openresty|changed or force_install
+
+- name: log symlinks
+  file:
+    force: yes
+    state: link
+    path: "{{ item.link_name }}"
+    src: "{{ item.link_to }}"
+  with_items:
+    - link_name: /usr/local/openresty/nginx/access.log
+      link_to: /dev/stdout
+    - link_name: /usr/local/openresty/nginx/error.log
+      link_to: /dev/stderr
+

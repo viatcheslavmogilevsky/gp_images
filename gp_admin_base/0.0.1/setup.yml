@@ -1,0 +1,19 @@
+---
+- hosts: localhost
+  tasks:
+    - name: setup libs
+      apt:
+        pkg: "{{ item }}"
+        state: present
+        install_recommends: no
+      with_items:
+        - imagemagick
+        - libmagickwand-dev
+        - libpq-dev
+        - postgresql-client
+        - supervisor
+        - qt5-default
+        - libqt5webkit5-dev
+
+
+    - include: wkhtmltopdf.yml
