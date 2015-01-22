@@ -10,7 +10,5 @@ nodejs_shasum_url: "{{nodejs_base_url}}SHASUMS.txt"
 nodejs_path: "/usr/local/"
 nodejs_tmp_dir: "/tmp/"
 nodejs_global_packages:
-  - name: forever
-    version: ''
   - name: coffee-script
     version: ''
