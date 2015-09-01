@@ -1,0 +1,84 @@
+---
+- hosts: docker
+  tasks:
+    - name: setup libs
+      apt:
+        pkg: "{{ item }}"
+        state: present
+        install_recommends: no
+      with_items:
+        - imagemagick
+        - libmagickwand-dev
+        - libpq-dev
+        - postgresql-client
+        - supervisor
+        - qt5-default
+        - libqt5webkit5-dev
+
+    - name: wkhtmltox deb package download
+      get_url:
+        url: http://download.gna.org/wkhtmltopdf/0.12/0.12.2.1/wkhtmltox-0.12.2.1_linux-trusty-amd64.deb
+        dest: /tmp/wkhtmltox.deb
+
+    - name: install from wkhtmltox deb package
+      apt:
+        deb: /tmp/wkhtmltox.deb
+
+    - name: wkhtmltox source deb file removing
+      file:
+        path: /tmp/wkhtmltox.deb
+        state: absent
+
+    - name: install build dependencies
+      apt:
+        pkg: "{{ item }}"
+        state: present
+        install_recommends: no
+      with_items:
+        - build-essential
+        - git-core
+        - libcurl4-openssl-dev
+        - libreadline-dev
+        - libssl-dev
+        - libxml2-dev
+        - libxslt1-dev
+        - libyaml-dev
+        - zlib1g-dev
+
+    - name: ruby2.1.2 archive download
+      get_url:
+        url: http://ftp.ruby-lang.org/pub/ruby/2.1/ruby-2.1.2.tar.gz
+        dest: /tmp/ruby-2.1.2.tar.gz
+
+    - name: unpack ruby2.1.2 archive
+      command: tar -zxvf ruby-2.1.2.tar.gz
+      args:
+        chdir: /tmp
+
+    - command: ./configure --disable-install-doc
+      args:
+        chdir: /tmp/ruby-2.1.2
+
+    - command: make
+      args:
+        chdir: /tmp/ruby-2.1.2
+
+    - command: make install
+      args:
+        chdir: /tmp/ruby-2.1.2
+
+    - file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - /tmp/ruby-2.1.2
+        - /tmp/ruby-2.1.2.tar.gz
+
+    - lineinfile:
+        dest: /etc/gemrc
+        line: "gem: --no-document"
+        state: present
+        insertbefore: BOF
+        create: yes
+
+    - command: gem install bundler --source http://rubygems.org
