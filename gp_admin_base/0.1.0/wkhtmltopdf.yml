@@ -1,0 +1,14 @@
+---
+- name: deb package download
+  get_url:
+    url: http://switch.dl.sourceforge.net/project/wkhtmltopdf/0.12.2.1/wkhtmltox-0.12.2.1_linux-trusty-amd64.deb
+    dest: /tmp/wkhtmltox.deb
+
+- name: install from deb package
+  apt:
+    deb: /tmp/wkhtmltox.deb
+
+- name: source deb file removing
+  file:
+    path: /tmp/wkhtmltox.deb
+    state: absent
